@@ -65,6 +65,12 @@ async def _handler(ws):
                     cfg = _load_config()
                     await _safe_send(ws, {"type": "settings_data", "settings": cfg})
 
+                elif msg_type == "update_settings":
+                    new_cfg = data.get("settings", {})
+                    if new_cfg:
+                        _save_config(new_cfg)
+                        await _safe_send(ws, {"type": "settings_saved", "ok": True})
+
                 elif msg_type == "ping":
                     await _safe_send(ws, {"type": "pong"})
 
@@ -183,3 +189,19 @@ def _load_config() -> dict:
             return json.load(f)
     except Exception:
         return {}
+
+
+def _save_config(new_cfg: dict) -> bool:
+    """Fusionne new_cfg dans jarvis_config.json et sauvegarde."""
+    try:
+        cfg_path = os.path.join(_DESKTOP_DIR, "jarvis_config.json")
+        # Charger l'existant pour ne pas écraser les commentaires ou clés inconnues
+        current = _load_config()
+        current.update(new_cfg)
+        with open(cfg_path, "w", encoding="utf-8") as f:
+            json.dump(current, f, ensure_ascii=False, indent=2)
+        log.info("[WsBridge] jarvis_config.json sauvegardé")
+        return True
+    except Exception as e:
+        log.error("[WsBridge] Erreur sauvegarde config : %s", e)
+        return False

@@ -342,6 +342,13 @@ class VoicePipeline:
         # Démarrer le pont WebSocket (desktop → frontend)
         _ws.start(input_callback=self._handle_command)
 
+        # Moniteur CPU/RAM → frontend via ws_bridge
+        try:
+            import stats_monitor
+            stats_monitor.start()
+        except Exception as _e:
+            print(f"[voice] stats_monitor non chargé ({_e})")
+
     # ── Démarrage ─────────────────────────────────────────────────────────────
 
     def start(self):

@@ -14,16 +14,18 @@ export interface TimerCmd {
 }
 
 export interface DesktopBridgeState {
-  isConnected:  boolean;
-  orbState:     OrbState;
-  subtitle:     string;
-  showSubtitle: boolean;
-  voiceText:    string;       // texte STT → remplir l'input chat
-  timerCmd:     TimerCmd | null;
-  globeCmd:     GlobeAction | null;
-  stats:        { cpu: number; ram: number } | null;
-  sendInput:    (text: string) => void;
+  isConnected:     boolean;
+  orbState:        OrbState;
+  subtitle:        string;
+  showSubtitle:    boolean;
+  voiceText:       string;
+  timerCmd:        TimerCmd | null;
+  globeCmd:        GlobeAction | null;
+  stats:           { cpu: number; ram: number } | null;
+  settingsData:    Record<string, unknown> | null;
+  sendInput:       (text: string) => void;
   requestSettings: () => void;
+  saveSettings:    (cfg: Record<string, unknown>) => void;
 }
 
 export function useDesktopBridge(): DesktopBridgeState {
@@ -35,6 +37,7 @@ export function useDesktopBridge(): DesktopBridgeState {
   const [timerCmd,     setTimerCmd]     = useState<TimerCmd | null>(null);
   const [globeCmd,     setGlobeCmd]     = useState<GlobeAction | null>(null);
   const [stats,        setStats]        = useState<{ cpu: number; ram: number } | null>(null);
+  const [settingsData, setSettingsData] = useState<Record<string, unknown> | null>(null);
 
   const wsRef          = useRef<WebSocket | null>(null);
   const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -131,6 +134,10 @@ export function useDesktopBridge(): DesktopBridgeState {
         setStats({ cpu: msg.cpu as number, ram: msg.ram as number });
         break;
 
+      case "settings_data":
+        setSettingsData(msg.settings as Record<string, unknown>);
+        break;
+
       case "pong":
         break;
 
@@ -162,6 +169,12 @@ export function useDesktopBridge(): DesktopBridgeState {
     }
   }, []);
 
+  const saveSettings = useCallback((cfg: Record<string, unknown>) => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: "update_settings", settings: cfg }));
+    }
+  }, []);
+
   return {
     isConnected,
     orbState,
@@ -171,7 +184,9 @@ export function useDesktopBridge(): DesktopBridgeState {
     timerCmd,
     globeCmd,
     stats,
+    settingsData,
     sendInput,
     requestSettings,
+    saveSettings,
   };
 }

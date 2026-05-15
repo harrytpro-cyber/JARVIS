@@ -14,6 +14,8 @@ interface Props {
   apiOnline:   boolean;
   onHelp:      () => void;
   onGlobe:     () => void;
+  onSettings:  () => void;
+  onWeather:   () => void;
   isMuted:     boolean;
   onMute:      () => void;
   quality:     "high" | "low";
@@ -21,7 +23,7 @@ interface Props {
 }
 
 export function HudOverlay({
-  orbState, apiOnline, onHelp, onGlobe, isMuted, onMute, quality, onQuality,
+  orbState, apiOnline, onHelp, onGlobe, onSettings, onWeather, isMuted, onMute, quality, onQuality,
 }: Props) {
   const [time, setTime] = useState({ hms: "", date: "" });
 
@@ -72,6 +74,14 @@ export function HudOverlay({
 
         <button className="hud-btn" onClick={onGlobe}>
           🌐 GLOBE
+        </button>
+
+        <button className="hud-btn" onClick={onSettings}>
+          ⚙ CONFIG
+        </button>
+
+        <button className="hud-btn" onClick={onWeather}>
+          🌤 MÉTÉO
         </button>
       </div>
 

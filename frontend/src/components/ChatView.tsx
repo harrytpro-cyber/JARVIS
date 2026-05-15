@@ -12,6 +12,10 @@ import SubtitleHud              from "./SubtitleHud";
 import TimerHud                 from "./TimerHud";
 import type { TimerHandle }     from "./TimerHud";
 import HelpHud                  from "./HelpHud";
+import SettingsModal            from "./SettingsModal";
+import WeatherPanel             from "./WeatherPanel";
+import HaPanel                 from "./HaPanel";
+import type { JarvisConfig }    from "./SettingsModal";
 import type { GlobeHandle, GlobeAction } from "./GlobeOverlay";
 
 // Three.js : chargement côté client uniquement
@@ -40,12 +44,14 @@ export function ChatView({ token }: Props) {
   const globeRef     = useRef<GlobeHandle>(null);
   const timerHandle  = useRef<TimerHandle | null>(null);
 
-  const [booted,    setBooted]    = useState(false);
-  const [showHelp,  setShowHelp]  = useState(false);
-  const [showGlobe, setShowGlobe] = useState(false);
-  const [isMuted,   setIsMuted]   = useState(false);
-  const [quality,   setQuality]   = useState<"high" | "low">("high");
-  const [showChat,  setShowChat]  = useState(false);
+  const [booted,       setBooted]       = useState(false);
+  const [showHelp,     setShowHelp]     = useState(false);
+  const [showGlobe,    setShowGlobe]    = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [isMuted,      setIsMuted]      = useState(false);
+  const [quality,      setQuality]      = useState<"high" | "low">("high");
+  const [showChat,     setShowChat]     = useState(false);
+  const [showWeather,  setShowWeather]  = useState(true);
 
   // voiceText reçu du desktop → pré-remplir l'input (géré via ref interne ChatInput)
   const voiceTextRef = useRef("");
@@ -152,10 +158,29 @@ export function ChatView({ token }: Props) {
         apiOnline={anyOnline}
         onHelp={() => setShowHelp(true)}
         onGlobe={() => showGlobe ? setShowGlobe(false) : openGlobe()}
+        onSettings={() => {
+          bridge.requestSettings();
+          setShowSettings(true);
+        }}
+        onWeather={() => setShowWeather(v => !v)}
         isMuted={isMuted}
         onMute={() => setIsMuted(v => !v)}
         quality={quality}
         onQuality={() => setQuality(q => q === "high" ? "low" : "high")}
+      />
+
+      {/* ── Panneau météo ───────────────────────────────────────────────── */}
+      {showWeather && (
+        <WeatherPanel
+          ville={(bridge.settingsData?.ville as string | undefined) ?? "Paris"}
+        />
+      )}
+
+      {/* ── Panneau Home Assistant ───────────────────────────────────────── */}
+      <HaPanel
+        haUrl={bridge.settingsData?.ha_url as string | undefined}
+        haToken={bridge.settingsData?.ha_token as string | undefined}
+        customEntities={bridge.settingsData?.ha_custom_entities as Parameters<typeof HaPanel>[0]["customEntities"]}
       />
 
       {/* ── Badge desktop bridge ─────────────────────────────────────────── */}
@@ -188,6 +213,17 @@ export function ChatView({ token }: Props) {
 
       {/* ── Aide commandes ───────────────────────────────────────────────── */}
       <HelpHud visible={showHelp} onClose={() => setShowHelp(false)} />
+
+      {/* ── Modal Settings ───────────────────────────────────────────────── */}
+      <SettingsModal
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        initialCfg={bridge.settingsData as JarvisConfig | null}
+        onSave={(cfg) => {
+          bridge.saveSettings(cfg as unknown as Record<string, unknown>);
+          setShowSettings(false);
+        }}
+      />
 
       {/* ── Zone messages (slide-up) ─────────────────────────────────────── */}
       <div
