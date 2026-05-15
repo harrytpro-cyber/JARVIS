@@ -1,0 +1,43 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "JARVIS — Demo HUD",
+      "runtimeExecutable": "C:\\Users\\harry\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+      "runtimeArgs": ["-m", "http.server", "3001", "--directory", "frontend"],
+      "port": 3001
+    },
+    {
+      "name": "Frontend — Next.js dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "frontend",
+      "port": 3000
+    },
+    {
+      "name": "Backend — FastAPI (uvicorn reload)",
+      "runtimeExecutable": "uvicorn",
+      "runtimeArgs": ["main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"],
+      "cwd": "backend",
+      "port": 8000
+    },
+    {
+      "name": "Full Stack — Docker Compose",
+      "runtimeExecutable": "docker",
+      "runtimeArgs": ["compose", "up"],
+      "port": 3000
+    },
+    {
+      "name": "n8n — Automation (Docker)",
+      "runtimeExecutable": "docker",
+      "runtimeArgs": ["compose", "up", "n8n", "postgres", "redis"],
+      "port": 5678
+    },
+    {
+      "name": "Ollama — Local LLM (Docker)",
+      "runtimeExecutable": "docker",
+      "runtimeArgs": ["compose", "up", "ollama"],
+      "port": 11434
+    }
+  ]
+}

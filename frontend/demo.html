@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JARVIS — Interface HUD</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #020d1a;
+      color: #00d4ff;
+      font-family: "Courier New", Courier, monospace;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Coins HUD ─────────────────────────────── */
+    .hud-corner {
+      position: fixed;
+      width: 28px; height: 28px;
+    }
+    .hud-corner.tl { top:0; left:0;  border-top: 1.5px solid #00d4ff44; border-left: 1.5px solid #00d4ff44; }
+    .hud-corner.tr { top:0; right:0; border-top: 1.5px solid #00d4ff44; border-right: 1.5px solid #00d4ff44; }
+    .hud-corner.bl { bottom:0; left:0;  border-bottom: 1.5px solid #00d4ff44; border-left: 1.5px solid #00d4ff44; }
+    .hud-corner.br { bottom:0; right:0; border-bottom: 1.5px solid #00d4ff44; border-right: 1.5px solid #00d4ff44; }
+    .hud-topline {
+      position: fixed; top:0; left:0; right:0; height:1px;
+      background: linear-gradient(to right, transparent, #00d4ff33, transparent);
+    }
+    #hud-clock {
+      position: fixed; top: 10px; right: 36px;
+      font-size: 11px; color: #00d4ff55; letter-spacing: 0.15em;
+    }
+    .hud-status {
+      position: fixed; top: 10px; left: 36px;
+      font-size: 11px; color: #00d4ff55; letter-spacing: 0.15em;
+      display: flex; align-items: center; gap: 8px;
+      text-transform: uppercase;
+    }
+    .dot { width:7px; height:7px; border-radius:50%; background:#00d4ff; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{ opacity:1; } 50%{ opacity:.3; } }
+
+    /* ── En-tête ───────────────────────────────── */
+    header {
+      padding: 36px 16px 16px;
+      border-bottom: 1px solid #0a2040;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    header h1 {
+      font-size: 28px;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: #00d4ff;
+    }
+    header p { font-size: 11px; color: #1e3a5f; letter-spacing: 0.2em; margin-top: 4px; }
+    .divider {
+      margin: 10px auto 0;
+      width: 160px; height: 1px;
+      background: linear-gradient(to right, transparent, #00d4ff44, transparent);
+    }
+
+    /* ── Zone messages ─────────────────────────── */
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 16px;
+      scrollbar-width: none;
+    }
+    #messages::-webkit-scrollbar { display: none; }
+    .msgs-inner { max-width: 760px; margin: 0 auto; }
+
+    .empty-state {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      height: 200px; gap: 14px; color: #1e3a5f;
+      font-size: 13px; letter-spacing: 0.1em;
+    }
+    .ring-outer {
+      width: 60px; height: 60px; border-radius: 50%;
+      border: 1px solid #0a2040;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .ring-inner {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 1px solid #00d4ff22;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .ring-core { width: 8px; height: 8px; border-radius: 50%; background:#00d4ff; animation: pulse 2s infinite; }
+
+    .msg { display: flex; margin-bottom: 16px; }
+    .msg.user  { justify-content: flex-end; }
+    .msg.assistant { justify-content: flex-start; }
+
+    .msg-label {
+      font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+      margin-bottom: 4px; display: flex; align-items: center; gap: 8px;
+    }
+    .msg.user .msg-label  { justify-content: flex-end; color: #1e3a5f; }
+    .msg.assistant .msg-label { color: #00d4ff; }
+    .label-dot { width:6px; height:6px; border-radius:50%; background:#00d4ff; animation: pulse 2s infinite; }
+
+    .bubble {
+      max-width: 78%; padding: 12px 16px;
+      border-radius: 3px; font-size: 13px; line-height: 1.6;
+    }
+    .msg.user .bubble {
+      background: #0d2040; border: 1px solid #1e3a5f; color: #7eb8d4;
+    }
+    .msg.assistant .bubble {
+      background: #030f1e; border: 1px solid #0a2040; color: #00d4ff;
+    }
+    .model-tag { font-size: 10px; color: #00d4ff22; margin-left: 6px; }
+
+    .cursor { display:inline-block; width:2px; height:14px;
+      background:#00d4ff; margin-left:2px; vertical-align:bottom;
+      animation: blink .7s step-end infinite; }
+    @keyframes blink { 50%{ opacity:0; } }
+
+    /* ── Input ─────────────────────────────────── */
+    footer {
+      border-top: 1px solid #0a2040;
+      background: #020d1a;
+      padding: 12px 16px 8px;
+      flex-shrink: 0;
+    }
+    .input-row {
+      display: flex; align-items: flex-end; gap: 12px;
+      max-width: 760px; margin: 0 auto;
+    }
+    .indicator { display:flex; flex-direction:column; align-items:center; gap:4px; padding-bottom:8px; }
+    .ind-dot { width:6px; height:6px; border-radius:50%; background:#1e3a5f; transition:.3s; }
+    .ind-dot.active { background:#00d4ff; animation: pulse 2s infinite; }
+    .ind-line { width:1px; height:24px; background:#0a2040; }
+
+    textarea {
+      flex:1; background:transparent; border:none; outline:none;
+      resize:none; font-family:"Courier New",monospace;
+      font-size:13px; color:#00d4ff; line-height:1.6;
+      padding: 8px 0; min-height:36px; max-height:160px;
+    }
+    textarea::placeholder { color:#1e3a5f; }
+
+    button#send-btn {
+      margin-bottom:6px; padding: 8px 16px;
+      border-radius:3px; font-family:"Courier New",monospace;
+      font-size:11px; letter-spacing:.15em; text-transform:uppercase;
+      cursor:pointer; transition:.2s; background:transparent;
+    }
+    button#send-btn.ready {
+      border:1px solid #00d4ff; color:#00d4ff;
+    }
+    button#send-btn.ready:hover { background:#00d4ff15; }
+    button#send-btn.empty { border:1px solid #0a2040; color:#1e3a5f; cursor:default; }
+    button#send-btn.streaming { border:1px solid #7f1d1d; color:#ef4444; }
+    button#send-btn.streaming:hover { background:#450a0a; }
+
+    footer p { text-align:center; font-size:10px; color:#0a2040; margin-top:6px; letter-spacing:.1em; }
+  </style>
+</head>
+<body>
+
+  <!-- HUD décoratif -->
+  <div class="hud-corner tl"></div>
+  <div class="hud-corner tr"></div>
+  <div class="hud-corner bl"></div>
+  <div class="hud-corner br"></div>
+  <div class="hud-topline"></div>
+  <div id="hud-clock"></div>
+  <div class="hud-status"><div class="dot"></div>Système en ligne</div>
+
+  <!-- En-tête -->
+  <header>
+    <h1>J.A.R.V.I.S</h1>
+    <p>Just A Rather Very Intelligent System</p>
+    <div class="divider"></div>
+  </header>
+
+  <!-- Messages -->
+  <div id="messages">
+    <div class="msgs-inner" id="msgs-inner">
+      <div class="empty-state" id="empty-state">
+        <div class="ring-outer"><div class="ring-inner"><div class="ring-core"></div></div></div>
+        <span>En attente de vos instructions...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Input -->
+  <footer>
+    <div class="input-row">
+      <div class="indicator">
+        <div class="ind-dot" id="ind-dot"></div>
+        <div class="ind-line"></div>
+      </div>
+      <textarea id="input" rows="1" placeholder="Parlez à JARVIS..."></textarea>
+      <button id="send-btn" class="empty">Envoyer</button>
+    </div>
+    <p>Entrée pour envoyer · Shift+Entrée pour nouvelle ligne</p>
+  </footer>
+
+<script>
+  // ── Horloge ───────────────────────────────────────────
+  function tick() {
+    document.getElementById("hud-clock").textContent =
+      new Date().toLocaleTimeString("fr-FR", { hour12: false });
+  }
+  tick(); setInterval(tick, 1000);
+
+  // ── Éléments ──────────────────────────────────────────
+  const input    = document.getElementById("input");
+  const sendBtn  = document.getElementById("send-btn");
+  const msgsInner= document.getElementById("msgs-inner");
+  const emptyState=document.getElementById("empty-state");
+  const indDot   = document.getElementById("ind-dot");
+  const API      = "http://localhost:8000";
+
+  let token         = null;    // JWT récupéré après login
+  let convId        = null;
+  let isStreaming   = false;
+  let abortCtrl     = null;
+
+  // ── Démo hors-backend : simulation locale ─────────────
+  const DEMO_MODE = true;  // passe à false quand le backend tourne
+
+  const DEMO_RESPONSES = [
+    "Bien reçu. Analyse en cours... Votre question est pertinente, mais permettez-moi d'être direct : vous auriez pu chercher ça vous-même. Cela dit, voici la réponse.",
+    "Traitement effectué. Je dois admettre que c'est une question intéressante pour une fois. Voici ce que j'ai trouvé dans mes bases de données.",
+    "Compris. Je pourrais faire semblant que c'est complexe, mais honnêtement, c'est assez simple. Voilà.",
+    "Requête enregistrée. Fascinant. Une autre question à laquelle j'aurais pu répondre les yeux fermés — si j'en avais. En tout cas, voici.",
+  ];
+  let demoIdx = 0;
+
+  // Simulation commandes mémoire
+  const MEMORY_STORE = [];
+  const MEMORY_COMMANDS = {
+    "mémorise que": (text) => {
+      const fact = text.replace(/^mémorise que\s*/i, "").trim();
+      MEMORY_STORE.push({ content: fact, type: "fact", importance: 0.8, date: new Date().toLocaleDateString("fr-FR") });
+      return `Mémorisé : « ${fact} ». Ce souvenir est maintenant indexé dans pgvector avec une importance de 0.8.`;
+    },
+    "qu'est-ce que tu sais sur moi": () => {
+      if (!MEMORY_STORE.length) return "Je n'ai encore rien mémorisé à votre sujet. Dites-moi quelque chose avec « Mémorise que... ».";
+      return "Voici ce que je sais sur vous :\n" + MEMORY_STORE.map((m, i) => `${i+1}. [${m.type}] ${m.content} (importance : ${m.importance})`).join("\n");
+    },
+    "que sais-tu sur moi": () => MEMORY_COMMANDS["qu'est-ce que tu sais sur moi"](),
+    "efface toute ma mémoire": () => "⚠️ Confirmation requise. Tapez exactement : « CONFIRMER effacement »",
+    "confirmer effacement": () => {
+      const n = MEMORY_STORE.length;
+      MEMORY_STORE.length = 0;
+      return `Mémoire effacée. ${n} souvenir(s) supprimé(s). Session Redis réinitialisée.`;
+    },
+  };
+
+  // ── Auto-resize textarea ───────────────────────────────
+  input.addEventListener("input", () => {
+    input.style.height = "auto";
+    input.style.height = Math.min(input.scrollHeight, 160) + "px";
+    updateBtn();
+  });
+
+  function updateBtn() {
+    if (isStreaming) {
+      sendBtn.textContent = "Stop";
+      sendBtn.className = "streaming";
+    } else if (input.value.trim()) {
+      sendBtn.textContent = "Envoyer";
+      sendBtn.className = "ready";
+    } else {
+      sendBtn.textContent = "Envoyer";
+      sendBtn.className = "empty";
+    }
+    indDot.className = "ind-dot" + (isStreaming ? " active" : "");
+  }
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
+  });
+  sendBtn.addEventListener("click", () => {
+    if (isStreaming) { abortCtrl?.abort(); setStreaming(false); }
+    else handleSend();
+  });
+
+  // ── Ajouter un message ────────────────────────────────
+  function addMessage(role, content = "", model = null) {
+    if (emptyState) emptyState.style.display = "none";
+
+    const wrap = document.createElement("div");
+    wrap.className = "msg " + role;
+
+    const labelText = role === "user" ? "Vous" : "JARVIS";
+    const modelTag = model ? `<span class="model-tag">· ${model}</span>` : "";
+    const dotHtml  = role === "assistant" ? '<div class="label-dot"></div>' : "";
+
+    wrap.innerHTML = `
+      <div>
+        <div class="msg-label">${dotHtml}${labelText}${modelTag}</div>
+        <div class="bubble" id="bubble-${Date.now()}"></div>
+      </div>`;
+
+    msgsInner.appendChild(wrap);
+    const bubble = wrap.querySelector(".bubble");
+    bubble.textContent = content;
+    scrollBottom();
+    return bubble;
+  }
+
+  function scrollBottom() {
+    const msgs = document.getElementById("messages");
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function setStreaming(val) {
+    isStreaming = val;
+    input.disabled = val;
+    updateBtn();
+  }
+
+  // ── Envoi ─────────────────────────────────────────────
+  async function handleSend() {
+    const text = input.value.trim();
+    if (!text || isStreaming) return;
+
+    addMessage("user", text);
+    input.value = "";
+    input.style.height = "auto";
+    setStreaming(true);
+
+    // Commandes mémoire (démo locale)
+    const textLower = text.toLowerCase().trim();
+    let memReply = null;
+    for (const [trigger, fn] of Object.entries(MEMORY_COMMANDS)) {
+      if (textLower.startsWith(trigger) || textLower === trigger) {
+        memReply = fn(text);
+        break;
+      }
+    }
+
+    if (memReply) {
+      await simulateStream(addMessage("assistant", "", "mémoire-locale"), memReply);
+    } else if (DEMO_MODE) {
+      await simulateStream(addMessage("assistant", "", "claude-sonnet-4-6"),
+        DEMO_RESPONSES[demoIdx++ % DEMO_RESPONSES.length]);
+    } else {
+      await realStream(text);
+    }
+    setStreaming(false);
+  }
+
+  // ── Simulation stream (démo sans backend) ─────────────
+  async function simulateStream(bubble, text) {
+    const cursor = document.createElement("span");
+    cursor.className = "cursor";
+    bubble.appendChild(cursor);
+
+    for (const char of text) {
+      bubble.insertBefore(document.createTextNode(char), cursor);
+      scrollBottom();
+      await delay(18 + Math.random() * 25);
+    }
+    cursor.remove();
+  }
+
+  // ── Stream réel via SSE ────────────────────────────────
+  async function realStream(content) {
+    const bubble = addMessage("assistant", "", null);
+    const cursor = document.createElement("span");
+    cursor.className = "cursor";
+    bubble.appendChild(cursor);
+
+    abortCtrl = new AbortController();
+    const params = new URLSearchParams({ content });
+    if (convId) params.set("conversation_id", convId);
+
+    try {
+      const res = await fetch(`${API}/api/v1/chat/stream?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        signal: abortCtrl.signal,
+      });
+      const reader = res.body.getReader();
+      const dec = new TextDecoder();
+      let buf = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true });
+        const lines = buf.split("\n");
+        buf = lines.pop() ?? "";
+
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const data = JSON.parse(line.slice(6));
+          if (data.conversation_id) convId = data.conversation_id;
+          if (data.token) {
+            bubble.insertBefore(document.createTextNode(data.token), cursor);
+            scrollBottom();
+          }
+          if (data.done) cursor.remove();
+          if (data.error) { cursor.remove(); bubble.textContent = "[Erreur] " + data.error; }
+        }
+      }
+    } catch(e) {
+      if (e.name !== "AbortError") { cursor.remove(); bubble.textContent = "[Connexion interrompue]"; }
+      else cursor.remove();
+    }
+  }
+
+  function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+</body>
+</html>

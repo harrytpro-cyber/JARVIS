@@ -1,0 +1,27 @@
+{
+  "_commentaire": "Fichier de configuration JARVIS — Morphoz.io — éditez selon vos besoins",
+
+  "user_name": "Harry",
+
+  "ville": "Paris",
+
+  "mic_device_index": null,
+
+  "musique_lien": "",
+
+  "custom_apps": [
+  ],
+
+  "ha_url": "",
+  "ha_token": "",
+
+  "ha_custom_entities": {
+    "_commentaire": "Ajoutez ici vos entités Home Assistant (nom vocal → entity_id)",
+    "lumieres": [
+    ],
+    "prises": [
+    ],
+    "capteurs": [
+    ]
+  }
+}

@@ -1,0 +1,44 @@
+# JARVIS Desktop — dépendances à installer sur Windows (hors Docker)
+# pip install -r desktop/requirements.txt
+
+pywebview>=5.0.0
+pystray>=0.19.0
+Pillow>=10.0.0
+python-dotenv>=1.0.0
+SpeechRecognition>=3.10.0
+edge-tts>=7.2.8
+pygame>=2.5.0
+requests>=2.31.0
+
+# Wake word OpenWakeWord (gratuit, sans clé)
+openwakeword>=0.6.0
+pyaudio>=0.2.14
+numpy>=1.26.0
+
+# Wake word Porcupine (optionnel — nécessite PORCUPINE_ACCESS_KEY dans .env)
+# Décommenter quand la clé est configurée sur https://console.picovoice.ai
+# pvporcupine>=3.0.0
+# pvrecorder>=1.2.0
+
+# ── Modules desktop étendus (app_launcher, spotify, deezer, vision…) ──
+pywin32>=306          # win32gui / win32con — fenêtres Windows
+pyautogui>=0.9.54     # simulation clavier / souris (Spotify, Deezer, Vision)
+pyperclip>=1.8.2      # presse-papiers (recherche Spotify/Deezer)
+psutil>=5.9.0         # fermeture de processus (AppLauncher.close)
+
+# Vision écran (optionnel — active jarvis_vision_cliquer + jarvis_vision_camera)
+# opencv-python>=4.8.0
+
+# ── Contrôle système (local_resolver) ──────────────────────────────────────────
+pycaw>=20181226                    # volume système Windows (IAudioEndpointVolume)
+comtypes>=1.4.0                    # dépendance pycaw
+screen-brightness-control>=0.23.0 # luminosité écran
+tzdata>=2024.1                     # base fuseaux horaires pour zoneinfo (Windows)
+
+# ── Pont WebSocket desktop ↔ frontend ─────────────────────────────────────────
+websockets>=12.0                   # ws_bridge.py — serveur local port 8765
+
+# ── Google Services (google_services.py) ──────────────────────────────────────
+google-api-python-client>=2.100.0  # Gmail, Docs, Sheets, Calendar
+google-auth>=2.20.0                # OAuth2
+google-auth-oauthlib>=1.0.0        # flow run_local_server

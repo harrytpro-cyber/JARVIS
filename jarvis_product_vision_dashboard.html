@@ -1,0 +1,455 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); }
+
+  .header {
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    padding: 1.5rem 0 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .header-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .logo-ring {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 1.5px solid var(--color-border-primary);
+    display: flex; align-items: center; justify-content: center;
+    background: var(--color-background-secondary);
+  }
+  .logo-ring i { font-size: 18px; color: var(--color-text-secondary); }
+  .project-name { font-size: 22px; font-weight: 500; color: var(--color-text-primary); letter-spacing: -0.3px; }
+  .tagline { font-size: 13px; color: var(--color-text-secondary); }
+
+  .metrics-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 1.5rem;
+  }
+  .metric-card {
+    background: var(--color-background-secondary);
+    border-radius: var(--border-radius-md);
+    padding: 14px;
+  }
+  .metric-label { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .metric-value { font-size: 20px; font-weight: 500; color: var(--color-text-primary); }
+  .metric-sub { font-size: 11px; color: var(--color-text-tertiary); margin-top: 2px; }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .card {
+    background: var(--color-background-primary);
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-lg);
+    padding: 1rem 1.25rem;
+  }
+  .card-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .card-title i { font-size: 14px; }
+
+  .vision-text {
+    font-size: 14px;
+    color: var(--color-text-primary);
+    line-height: 1.6;
+  }
+  .vision-highlight {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    line-height: 1.5;
+    padding: 10px 14px;
+    background: var(--color-background-secondary);
+    border-radius: var(--border-radius-md);
+    border-left: 2px solid var(--color-border-primary);
+    margin-bottom: 10px;
+  }
+
+  .use-case-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    cursor: pointer;
+  }
+  .use-case-item:last-child { border-bottom: none; }
+  .use-case-item:hover { opacity: 0.8; }
+  .uc-icon {
+    width: 30px; height: 30px;
+    border-radius: var(--border-radius-md);
+    background: var(--color-background-secondary);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .uc-icon i { font-size: 15px; color: var(--color-text-secondary); }
+  .uc-name { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+  .uc-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: 1px; }
+  .uc-badge {
+    margin-left: auto;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 99px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .badge-mvp { background: var(--color-background-success); color: var(--color-text-success); }
+  .badge-v2  { background: var(--color-background-info);    color: var(--color-text-info); }
+  .badge-v3  { background: var(--color-background-warning);  color: var(--color-text-warning); }
+
+  .roadmap-item {
+    display: flex;
+    gap: 14px;
+    padding: 10px 0;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+  }
+  .roadmap-item:last-child { border-bottom: none; }
+  .roadmap-phase {
+    width: 60px;
+    flex-shrink: 0;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 4px 6px;
+    border-radius: var(--border-radius-md);
+    text-align: center;
+    height: fit-content;
+    margin-top: 1px;
+  }
+  .phase-0 { background: var(--color-background-success); color: var(--color-text-success); }
+  .phase-1 { background: var(--color-background-info); color: var(--color-text-info); }
+  .phase-2 { background: var(--color-background-warning); color: var(--color-text-warning); }
+  .phase-3 { background: var(--color-background-danger); color: var(--color-text-danger); }
+  .roadmap-content {}
+  .roadmap-title { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+  .roadmap-desc { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; line-height: 1.5; }
+  .roadmap-duration { font-size: 11px; color: var(--color-text-tertiary); margin-top: 3px; }
+
+  .risk-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 8px 0;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+  }
+  .risk-item:last-child { border-bottom: none; }
+  .risk-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+  .risk-high   { background: var(--color-text-danger); }
+  .risk-med    { background: var(--color-text-warning); }
+  .risk-low    { background: var(--color-text-success); }
+  .risk-name  { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+  .risk-desc  { font-size: 12px; color: var(--color-text-secondary); margin-top: 1px; }
+
+  .diff-item {
+    padding: 8px 0;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .diff-item:last-child { border-bottom: none; }
+  .diff-item i { font-size: 16px; color: var(--color-text-secondary); margin-top: 1px; flex-shrink: 0; }
+  .diff-text { font-size: 13px; color: var(--color-text-primary); line-height: 1.5; }
+  .diff-sub  { font-size: 12px; color: var(--color-text-secondary); margin-top: 1px; }
+
+  .doc-item {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 6px 0;
+    cursor: pointer;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+  }
+  .doc-item:last-child { border-bottom: none; }
+  .doc-item:hover { opacity: 0.75; }
+  .doc-folder { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); width: 100px; flex-shrink: 0; }
+  .doc-name { font-size: 13px; color: var(--color-text-primary); }
+  .doc-obj  { font-size: 11px; color: var(--color-text-tertiary); }
+
+  .stack-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .stack-tag {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 99px;
+    background: var(--color-background-secondary);
+    color: var(--color-text-secondary);
+    border: 0.5px solid var(--color-border-tertiary);
+  }
+</style>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo-ring"><i class="ti ti-cpu" aria-hidden="true"></i></div>
+    <div>
+      <div class="project-name">JARVIS — Product Vision</div>
+      <div class="tagline">Cadrage stratégique · Phase 0 · Mai 2026</div>
+    </div>
+  </div>
+</div>
+
+<div class="metrics-row">
+  <div class="metric-card">
+    <div class="metric-label">Phase actuelle</div>
+    <div class="metric-value">Cadrage</div>
+    <div class="metric-sub">Phase 0 / 4</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-label">Horizon MVP</div>
+    <div class="metric-value">8–12 sem.</div>
+    <div class="metric-sub">Fonctionnel ciblé</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-label">Cas d'usage MVP</div>
+    <div class="metric-value">5 core</div>
+    <div class="metric-sub">Identifiés · priorisés</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-label">Documents initiaux</div>
+    <div class="metric-value">8 docs</div>
+    <div class="metric-sub">Structure définie</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <div class="card-title"><i class="ti ti-eye" aria-hidden="true"></i>Vision produit</div>
+    <div class="vision-highlight">Un assistant IA personnel qui centralise, mémorise, orchestre et agit — de façon proactive — pour augmenter radicalement la productivité d'un individu.</div>
+    <div class="vision-text">JARVIS n'est pas un chatbot avancé. C'est un système d'orchestration IA capable de comprendre le contexte, maintenir une mémoire persistante, déléguer des tâches à des agents spécialisés, et interagir avec des systèmes tiers. L'expérience utilisateur doit faire ressentir l'impression d'avoir un collaborateur toujours disponible et parfaitement informé.</div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-target" aria-hidden="true"></i>Problème réellement résolu</div>
+    <div class="use-case-item" onclick="sendPrompt('Détaille le problème de fragmentation des outils pour JARVIS')">
+      <div class="uc-icon"><i class="ti ti-layout-grid" aria-hidden="true"></i></div>
+      <div><div class="uc-name">Fragmentation des outils</div><div class="uc-desc">Trop d'apps isolées, pas de mémoire partagée ni d'orchestration</div></div>
+    </div>
+    <div class="use-case-item" onclick="sendPrompt('Détaille le problème de perte de contexte pour JARVIS')">
+      <div class="uc-icon"><i class="ti ti-brain" aria-hidden="true"></i></div>
+      <div><div class="uc-name">Perte de contexte</div><div class="uc-desc">Chaque session IA repart de zéro — pas de mémoire long terme</div></div>
+    </div>
+    <div class="use-case-item" onclick="sendPrompt('Détaille le problème de charge cognitive pour JARVIS')">
+      <div class="uc-icon"><i class="ti ti-bolt" aria-hidden="true"></i></div>
+      <div><div class="uc-name">Charge cognitive élevée</div><div class="uc-desc">L'utilisateur pilote tout manuellement — l'IA ne fait qu'exécuter</div></div>
+    </div>
+    <div class="use-case-item" onclick="sendPrompt('Détaille le problème d\'automatisation pour JARVIS')">
+      <div class="uc-icon"><i class="ti ti-settings-automation" aria-hidden="true"></i></div>
+      <div><div class="uc-name">Automatisation absente</div><div class="uc-desc">Pas de workflows déclenchés automatiquement sur événements</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <div class="card-title"><i class="ti ti-list-check" aria-hidden="true"></i>Cas d'usage prioritaires</div>
+    <div class="use-case-item" onclick="sendPrompt('Détaille le cas d\'usage Assistant conversationnel contextuel pour JARVIS MVP')">
+      <div class="uc-icon"><i class="ti ti-message-dots" aria-hidden="true"></i></div>
+      <div><div class="uc-name">Assistant conversationnel contextuel</div><div class="uc-desc">Dialogue avec mémoire persistante et compréhension du profil</div></div>
+      <span class="uc-badge badge-mvp">MVP</span>
+    </div>
+    <div class="use-case-item" onclick="sendPrompt('Détaille le cas d\'usage Gestion de tâches IA pour JARVIS MVP')">
+      <div class="uc-icon"><i class="ti ti-checkbox" aria-hidden="true"></i></div>
+      <div><div class="uc-name">Gestion de tâches intelligente</div><div class="uc-desc">Capture, priorise et rappelle les tâches depuis la conversation</div></div>
+      <span class="uc-badge badge-mvp">MVP</span>
+    </div>
+    <div class="use-case-item" onclick="sendPrompt('Détaille le cas d\'usage recherche et synthèse pour JARVIS MVP')">
+      <div class="uc-icon"><i class="ti ti-search" aria-hidden="true"></i></div>
+      <div><div class="uc-name">Recherche & synthèse</div><div class="uc-desc">Recherche web, résumé de docs, extraction d'informations</div></div>
+      <span class="uc-badge badge-mvp">MVP</span>
+    </div>
+    <div class="use-case-item" onclick="sendPrompt('Détaille le cas d\'usage automatisation d\'actions pour JARVIS V2')">
+      <div class="uc-icon"><i class="ti ti-player-play" aria-hidden="true"></i></div>
+      <div><div class="uc-name">Automatisation d'actions</div><div class="uc-desc">Envoi d'emails, création de docs, appels API sur commande</div></div>
+      <span class="uc-badge badge-v2">V2</span>
+    </div>
+    <div class="use-case-item" onclick="sendPrompt('Détaille le cas d\'usage orchestration multi-agents pour JARVIS V3')">
+      <div class="uc-icon"><i class="ti ti-sitemap" aria-hidden="true"></i></div>
+      <div><div class="uc-name">Orchestration multi-agents</div><div class="uc-desc">Délégation à des agents spécialisés (code, finance, planning...)</div></div>
+      <span class="uc-badge badge-v3">V3</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><i class="ti ti-road" aria-hidden="true"></i>Roadmap réaliste</div>
+    <div class="roadmap-item">
+      <div class="roadmap-phase phase-0">Phase 0</div>
+      <div class="roadmap-content">
+        <div class="roadmap-title">Cadrage & architecture</div>
+        <div class="roadmap-desc">Vision produit, architecture technique, choix stack, documentation initiale</div>
+        <div class="roadmap-duration">2 semaines</div>
+      </div>
+    </div>
+    <div class="roadmap-item">
+      <div class="roadmap-phase phase-1">Phase 1</div>
+      <div class="roadmap-content">
+        <div class="roadmap-title">MVP core</div>
+        <div class="roadmap-desc">Chat + mémoire + tâches + interface minimaliste fonctionnelle</div>
+        <div class="roadmap-duration">6–8 semaines</div>
+      </div>
+    </div>
+    <div class="roadmap-item">
+      <div class="roadmap-phase phase-2">Phase 2</div>
+      <div class="roadmap-content">
+        <div class="roadmap-title">Automatisations & APIs</div>
+        <div class="roadmap-desc">Intégrations externes, workflows, voice input, tableau de bord</div>
+        <div class="roadmap-duration">6–10 semaines</div>
+      </div>
+    </div>
+    <div class="roadmap-item">
+      <div class="roadmap-phase phase-3">Phase 3</div>
+      <div class="roadmap-content">
+        <div class="roadmap-title">Agents & orchestration</div>
+        <div class="roadmap-desc">Système multi-agents, agents spécialisés, proactivité système</div>
+        <div class="roadmap-duration">Long terme</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="grid-3">
+  <div class="card">
+    <div class="card-title"><i class="ti ti-shield-x" aria-hidden="true"></i>Risques majeurs</div>
+    <div class="risk-item">
+      <div class="risk-dot risk-high"></div>
+      <div><div class="risk-name">Scope creep</div><div class="risk-desc">Tentation d'ajouter des fonctionnalités avant de valider les fondations</div></div>
+    </div>
+    <div class="risk-item">
+      <div class="risk-dot risk-high"></div>
+      <div><div class="risk-name">Latence mémoire</div><div class="risk-desc">Mémoire persistante mal conçue → lenteur ou incohérence context</div></div>
+    </div>
+    <div class="risk-item">
+      <div class="risk-dot risk-med"></div>
+      <div><div class="risk-name">Coûts API LLM</div><div class="risk-desc">Consommation non contrôlée de tokens sur des workflows longs</div></div>
+    </div>
+    <div class="risk-item">
+      <div class="risk-dot risk-med"></div>
+      <div><div class="risk-name">Voice complexity</div><div class="risk-desc">STT/TTS ajoute latence et complexité — à reporter post-MVP</div></div>
+    </div>
+    <div class="risk-item">
+      <div class="risk-dot risk-low"></div>
+      <div><div class="risk-name">Sécurité données</div><div class="risk-desc">Mémoire personnelle sensible → auth robuste obligatoire dès MVP</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><i class="ti ti-stars" aria-hidden="true"></i>Différenciation vs chatbot</div>
+    <div class="diff-item">
+      <i class="ti ti-database" aria-hidden="true"></i>
+      <div><div class="diff-text">Mémoire persistante cross-sessions</div><div class="diff-sub">JARVIS se souvient. Un chatbot oublie.</div></div>
+    </div>
+    <div class="diff-item">
+      <i class="ti ti-robot" aria-hidden="true"></i>
+      <div><div class="diff-text">Proactivité système</div><div class="diff-sub">Il agit sans être sollicité sur des patterns connus</div></div>
+    </div>
+    <div class="diff-item">
+      <i class="ti ti-plug-connected" aria-hidden="true"></i>
+      <div><div class="diff-text">Connexion aux systèmes réels</div><div class="diff-sub">Email, agenda, code, APIs — pas que du texte</div></div>
+    </div>
+    <div class="diff-item">
+      <i class="ti ti-sitemap" aria-hidden="true"></i>
+      <div><div class="diff-text">Orchestration d'agents</div><div class="diff-sub">Délègue à des sous-systèmes spécialisés</div></div>
+    </div>
+    <div class="diff-item">
+      <i class="ti ti-user-circle" aria-hidden="true"></i>
+      <div><div class="diff-text">Profil utilisateur profond</div><div class="diff-sub">Contexte, préférences, historique — toujours présent</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><i class="ti ti-stack-2" aria-hidden="true"></i>Stack technique envisagée</div>
+    <div style="font-size:12px; color: var(--color-text-secondary); margin-bottom:6px;">LLM & IA</div>
+    <div class="stack-row" style="margin-top:0; margin-bottom:10px;">
+      <span class="stack-tag">Claude API</span>
+      <span class="stack-tag">OpenAI</span>
+      <span class="stack-tag">LangChain / LangGraph</span>
+    </div>
+    <div style="font-size:12px; color: var(--color-text-secondary); margin-bottom:6px;">Mémoire</div>
+    <div class="stack-row" style="margin-top:0; margin-bottom:10px;">
+      <span class="stack-tag">PostgreSQL + pgvector</span>
+      <span class="stack-tag">Redis</span>
+    </div>
+    <div style="font-size:12px; color: var(--color-text-secondary); margin-bottom:6px;">Backend / Agents</div>
+    <div class="stack-row" style="margin-top:0; margin-bottom:10px;">
+      <span class="stack-tag">FastAPI (Python)</span>
+      <span class="stack-tag">Celery</span>
+      <span class="stack-tag">n8n</span>
+    </div>
+    <div style="font-size:12px; color: var(--color-text-secondary); margin-bottom:6px;">Frontend</div>
+    <div class="stack-row" style="margin-top:0;">
+      <span class="stack-tag">Next.js</span>
+      <span class="stack-tag">TailwindCSS</span>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom: 12px;">
+  <div class="card-title"><i class="ti ti-folder" aria-hidden="true"></i>Structure documentaire initiale</div>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px;">
+    <div>
+      <div class="doc-item" onclick="sendPrompt('Génère le document Product Vision Statement pour JARVIS')">
+        <div class="doc-folder">01_Product</div>
+        <div><div class="doc-name">Product Vision Statement</div><div class="doc-obj">Vision, positionnement, proposition de valeur</div></div>
+      </div>
+      <div class="doc-item" onclick="sendPrompt('Génère le document MVP Feature Spec pour JARVIS')">
+        <div class="doc-folder">02_MVP</div>
+        <div><div class="doc-name">MVP Feature Spec</div><div class="doc-obj">Fonctionnalités retenues, scope exact, critères done</div></div>
+      </div>
+      <div class="doc-item" onclick="sendPrompt('Génère le document System Architecture Overview pour JARVIS')">
+        <div class="doc-folder">04_Architecture</div>
+        <div><div class="doc-name">System Architecture Overview</div><div class="doc-obj">Schéma global, composants, flux de données</div></div>
+      </div>
+      <div class="doc-item" onclick="sendPrompt('Génère le document AI Architecture pour JARVIS')">
+        <div class="doc-folder">05_AI_Arch</div>
+        <div><div class="doc-name">AI Architecture & LLM Strategy</div><div class="doc-obj">Choix modèle, prompting, RAG, memory system</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="doc-item" onclick="sendPrompt('Génère le document Memory System Design pour JARVIS')">
+        <div class="doc-folder">12_Memory</div>
+        <div><div class="doc-name">Memory System Design</div><div class="doc-obj">Architecture mémoire court/long terme, vectorDB</div></div>
+      </div>
+      <div class="doc-item" onclick="sendPrompt('Génère le document Agent System Design pour JARVIS')">
+        <div class="doc-folder">06_Agents</div>
+        <div><div class="doc-name">Agent System Design</div><div class="doc-obj">Orchestrateur, agents spécialisés, communication</div></div>
+      </div>
+      <div class="doc-item" onclick="sendPrompt('Génère le document Roadmap pour JARVIS')">
+        <div class="doc-folder">16_Roadmap</div>
+        <div><div class="doc-name">Product Roadmap v1</div><div class="doc-obj">Phases, jalons, dépendances, critères de passage</div></div>
+      </div>
+      <div class="doc-item" onclick="sendPrompt('Génère le document Tech Stack Decision Log pour JARVIS')">
+        <div class="doc-folder">20_Dev_Log</div>
+        <div><div class="doc-name">Tech Stack Decision Log</div><div class="doc-obj">Choix techniques, justifications, alternatives écartées</div></div>
+      </div>
+    </div>
+  </div>
+</div>

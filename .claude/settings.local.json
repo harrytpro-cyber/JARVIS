@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"C:\\\\Users\\\\harry\\\\Desktop\\\\Morphoz IA\\\\JARVIS\\\\.claude\")",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(where python *)",
+      "Bash(where python3 *)",
+      "Bash(where node *)",
+      "Bash(where npx *)",
+      "Bash(where deno *)",
+      "PowerShell(& \"C:\\\\Users\\\\harry\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\python.exe\" -c \"import webview; import pystray; from PIL import Image; print\\('OK - tous les packages desktop sont install�s'\\)\")",
+      "Bash(python -c \"from dotenv import load_dotenv; print\\('python-dotenv OK'\\)\")",
+      "Bash(python -c ' *)",
+      "Bash(python -m pip install pycaw comtypes \"screen-brightness-control>=0.23.0\" tzdata --quiet)",
+      "Bash(python -m pip install \"google-api-python-client>=2.100.0\" \"google-auth>=2.20.0\" \"google-auth-oauthlib>=1.0.0\" --quiet)",
+      "Bash(npm run *)"
+    ]
+  }
+}

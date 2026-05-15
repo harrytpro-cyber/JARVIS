@@ -1,0 +1,545 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Reset ─────────────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #050508;
+  font-family: "Courier New", Courier, monospace;
+  -webkit-font-smoothing: antialiased;
+  color: #4ca8e8;
+}
+
+/* ── Scrollbar invisible ────────────────────────────────────────────────────── */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Orbe canvas ────────────────────────────────────────────────────────────── */
+#orb-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 50;
+  transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+#orb-canvas.minimized {
+  transform: translate(-38%, 38%) scale(0.25);
+  z-index: 300;
+}
+
+/* ── Status text ────────────────────────────────────────────────────────────── */
+#status-text {
+  position: fixed;
+  bottom: 44px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(76, 168, 232, 0.6);
+  font-size: 13px;
+  letter-spacing: 2.5px;
+  text-transform: lowercase;
+  font-weight: 300;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 100;
+  transition: opacity 0.4s ease;
+}
+#status-text:empty { opacity: 0; }
+
+/* ── Badge connexion haut-droite ────────────────────────────────────────────── */
+.connection-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  border: 1px solid rgba(76, 168, 232, 0.12);
+  border-radius: 20px;
+  background: rgba(5, 5, 8, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.connection-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  transition: background 0.4s ease, box-shadow 0.4s ease;
+  flex-shrink: 0;
+}
+.connection-badge.connected .connection-dot {
+  background: #22c55e;
+  box-shadow: 0 0 7px rgba(34, 197, 94, 0.5);
+}
+.connection-badge.disconnected .connection-dot {
+  background: #ef4444;
+  box-shadow: 0 0 7px rgba(239, 68, 68, 0.4);
+  animation: pulse-red 1.4s ease-in-out infinite;
+}
+.connection-label {
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: lowercase;
+  transition: color 0.4s ease;
+}
+.connection-badge.connected .connection-label  { color: rgba(34, 197, 94, 0.7); }
+.connection-badge.disconnected .connection-label { color: rgba(239, 68, 68, 0.6); }
+
+/* ── Boutons HUD top-bar ────────────────────────────────────────────────────── */
+.hud-btn {
+  padding: 7px 14px;
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  border-radius: 999px;
+  background: rgba(0, 229, 255, 0.08);
+  color: #00e5ff;
+  font-size: 11px;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  font-family: "Courier New", monospace;
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.15);
+}
+.hud-btn:hover {
+  background: rgba(0, 229, 255, 0.18);
+  box-shadow: 0 0 22px rgba(0, 229, 255, 0.35);
+}
+.hud-btn.off {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.28);
+  box-shadow: none;
+  filter: grayscale(1);
+}
+.hud-btn.danger {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: rgba(255, 160, 160, 0.9);
+  box-shadow: 0 0 14px rgba(239, 68, 68, 0.12);
+}
+
+/* ── Timer HUD ──────────────────────────────────────────────────────────────── */
+.timer-hud {
+  position: fixed;
+  top: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  pointer-events: none;
+  z-index: 200;
+  animation: fadeIn 0.5s ease;
+}
+.timer-value {
+  font-size: 52px;
+  font-weight: 300;
+  letter-spacing: 6px;
+  color: #00e5ff;
+  text-shadow: 0 0 30px rgba(0, 229, 255, 0.6);
+  line-height: 1;
+}
+.timer-value.urgent {
+  color: #ef4444;
+  text-shadow: 0 0 30px rgba(239, 68, 68, 0.7);
+  animation: pulse-red 0.8s ease-in-out infinite;
+}
+.timer-label {
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: rgba(0, 229, 255, 0.5);
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+/* ── Subtitles HUD ──────────────────────────────────────────────────────────── */
+.subtitle-hud {
+  position: fixed;
+  bottom: 130px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 700px;
+  width: 90%;
+  text-align: center;
+  pointer-events: none;
+  z-index: 200;
+}
+.subtitle-text {
+  font-size: 17px;
+  font-weight: 300;
+  color: #ffffff;
+  text-shadow: 0 2px 20px rgba(0, 229, 255, 0.4);
+  letter-spacing: 0.5px;
+  line-height: 1.5;
+  min-height: 1.5em;
+}
+.subtitle-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: #00e5ff;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: blink 1s step-end infinite;
+}
+
+/* ── Help HUD ───────────────────────────────────────────────────────────────── */
+.help-cmd {
+  position: absolute;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  pointer-events: none;
+  animation: fadeIn 0.4s ease forwards;
+  white-space: nowrap;
+}
+.help-cmd.left  { text-align: right; color: rgba(0, 229, 255, 0.65); }
+.help-cmd.right { text-align: left;  color: rgba(76, 168, 232, 0.55); }
+
+/* ── Globe overlay ──────────────────────────────────────────────────────────── */
+#globe-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.95);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 400;
+  opacity: 0;
+}
+#globe-canvas {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+}
+.globe-info {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  pointer-events: none;
+}
+.globe-target-label {
+  font-size: 13px;
+  letter-spacing: 4px;
+  color: #00e5ff;
+  text-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
+  text-transform: uppercase;
+}
+.globe-coords {
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: rgba(0, 229, 255, 0.4);
+  margin-top: 4px;
+}
+.globe-close-btn {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  z-index: 10;
+}
+.globe-morphoz-tag {
+  position: absolute;
+  bottom: 20px;
+  right: 24px;
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: rgba(0, 229, 255, 0.25);
+  text-transform: uppercase;
+}
+
+/* ── Boot screen ────────────────────────────────────────────────────────────── */
+.boot-overlay {
+  position: fixed;
+  inset: 0;
+  background: #050508;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  transition: opacity 0.8s ease;
+}
+.boot-title {
+  font-size: 32px;
+  letter-spacing: 10px;
+  color: #00e5ff;
+  text-shadow: 0 0 40px rgba(0, 229, 255, 0.6);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.boot-subtitle {
+  font-size: 10px;
+  letter-spacing: 5px;
+  color: rgba(0, 229, 255, 0.35);
+  text-transform: uppercase;
+  margin-bottom: 40px;
+}
+.boot-module {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 12px;
+  letter-spacing: 2px;
+  margin: 5px 0;
+  transition: color 0.3s ease;
+}
+.boot-module.done   { color: #22c55e; }
+.boot-module.active { color: #00e5ff; }
+.boot-module.wait   { color: rgba(76, 168, 232, 0.3); }
+.boot-module-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+.boot-module.active .boot-module-dot {
+  box-shadow: 0 0 10px currentColor;
+  animation: pulse-dot 1s ease-in-out infinite;
+}
+.boot-bar {
+  margin-top: 32px;
+  width: 320px;
+  height: 2px;
+  background: rgba(76, 168, 232, 0.1);
+  border-radius: 1px;
+  overflow: hidden;
+}
+.boot-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4ca8e8, #00e5ff);
+  border-radius: 1px;
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
+  transition: width 0.4s ease;
+}
+.boot-status {
+  margin-top: 12px;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: rgba(76, 168, 232, 0.4);
+}
+
+/* ── Messages chat ──────────────────────────────────────────────────────────── */
+.msg-jarvis {
+  background: rgba(10, 14, 26, 0.8);
+  border: 1px solid rgba(76, 168, 232, 0.12);
+  border-left: 2px solid #4ca8e8;
+  color: #e8f4fd;
+  font-size: 14px;
+  line-height: 1.7;
+  padding: 14px 18px;
+  border-radius: 0 8px 8px 8px;
+  backdrop-filter: blur(4px);
+}
+.msg-user {
+  background: rgba(14, 24, 48, 0.7);
+  border: 1px solid rgba(76, 168, 232, 0.08);
+  color: rgba(76, 168, 232, 0.75);
+  font-size: 13px;
+  padding: 10px 16px;
+  border-radius: 8px 0 8px 8px;
+  text-align: right;
+}
+
+/* ── Input zone ─────────────────────────────────────────────────────────────── */
+.chat-input-zone {
+  border-top: 1px solid rgba(76, 168, 232, 0.1);
+  background: rgba(5, 5, 8, 0.8);
+  backdrop-filter: blur(12px);
+  padding: 14px 20px 18px;
+}
+.chat-textarea {
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  color: #4ca8e8;
+  font-family: "Courier New", monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  width: 100%;
+  caret-color: #00e5ff;
+}
+.chat-textarea::placeholder { color: rgba(76, 168, 232, 0.2); }
+.chat-textarea:disabled { opacity: 0.4; }
+
+/* ── Keyboard input bar (style TechEnClair) ─────────────────────────────────── */
+.kbd-input-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(76, 168, 232, 0.12);
+  border-radius: 8px;
+  padding: 8px 14px;
+  background: rgba(10, 14, 26, 0.6);
+  backdrop-filter: blur(8px);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.kbd-input-bar:focus-within {
+  border-color: rgba(76, 168, 232, 0.3);
+  box-shadow: 0 0 20px rgba(76, 168, 232, 0.08);
+}
+
+/* ── Animations ─────────────────────────────────────────────────────────────── */
+@keyframes pulse-red {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
+}
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.3); opacity: 0.7; }
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes scan {
+  from { transform: translateY(-100%); }
+  to   { transform: translateY(100vh); }
+}
+
+/* ── HUD brackets coins ─────────────────────────────────────────────────────── */
+.hud-corner {
+  position: fixed;
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+  z-index: 90;
+  opacity: 0.5;
+}
+.hud-corner-tl { top: 12px; left: 12px;
+  border-top: 1.5px solid #4ca8e8; border-left: 1.5px solid #4ca8e8; }
+.hud-corner-tr { top: 12px; right: 12px;
+  border-top: 1.5px solid #4ca8e8; border-right: 1.5px solid #4ca8e8; }
+.hud-corner-bl { bottom: 12px; left: 12px;
+  border-bottom: 1.5px solid #4ca8e8; border-left: 1.5px solid #4ca8e8; }
+.hud-corner-br { bottom: 12px; right: 12px;
+  border-bottom: 1.5px solid #4ca8e8; border-right: 1.5px solid #4ca8e8; }
+
+/* ── Scan line effect ───────────────────────────────────────────────────────── */
+.scan-line {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.08), transparent);
+  pointer-events: none;
+  z-index: 80;
+  animation: scan 6s linear infinite;
+}
+
+/* ── Clock HUD ──────────────────────────────────────────────────────────────── */
+.clock-hud {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  text-align: right;
+  pointer-events: none;
+  z-index: 90;
+}
+.clock-time {
+  font-size: 22px;
+  letter-spacing: 4px;
+  color: rgba(76, 168, 232, 0.55);
+  line-height: 1;
+}
+.clock-date {
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: rgba(76, 168, 232, 0.25);
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* ── Assistant label bas-centre ─────────────────────────────────────────────── */
+.assistant-label {
+  position: fixed;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: rgba(76, 168, 232, 0.14);
+  pointer-events: none;
+  z-index: 90;
+  user-select: none;
+}
+
+/* ── Stat HUD (CPU / RAM) ───────────────────────────────────────────────────── */
+.stat-hud {
+  position: fixed;
+  top: 72px;
+  right: 18px;
+  text-align: right;
+  pointer-events: none;
+  z-index: 90;
+  line-height: 1.8;
+}
+.stat-line {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: rgba(76, 168, 232, 0.35);
+}
+
+/* ── Orbe time / date display ───────────────────────────────────────────────── */
+.orb-time {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, calc(-50% + 120px));
+  text-align: center;
+  pointer-events: none;
+  z-index: 60;
+}
+.orb-time-value {
+  font-size: 15px;
+  letter-spacing: 6px;
+  color: rgba(76, 168, 232, 0.3);
+}
+.orb-date-value {
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: rgba(76, 168, 232, 0.18);
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* ── Transitions d'état orbe ────────────────────────────────────────────────── */
+.orb-status {
+  position: fixed;
+  bottom: 44px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  letter-spacing: 3px;
+  text-transform: lowercase;
+  color: rgba(76, 168, 232, 0.5);
+  pointer-events: none;
+  z-index: 100;
+  transition: opacity 0.4s ease, color 0.4s ease;
+}
+.orb-status.thinking { color: rgba(110, 196, 255, 0.7); }
+.orb-status.speaking { color: rgba(90, 184, 240, 0.7); }
+.orb-status.listening { color: rgba(0, 229, 255, 0.7); }
