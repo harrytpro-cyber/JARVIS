@@ -13,6 +13,19 @@ export interface TimerCmd {
   label?:   string;
 }
 
+export interface RecipeData {
+  titre:        string;
+  ingredients:  string[];
+  instructions: string[];
+  portions?:    number;
+  temps?:       string;
+}
+
+export interface NotificationData {
+  title: string;
+  body:  string;
+}
+
 export interface DesktopBridgeState {
   isConnected:     boolean;
   orbState:        OrbState;
@@ -23,9 +36,14 @@ export interface DesktopBridgeState {
   globeCmd:        GlobeAction | null;
   stats:           { cpu: number; ram: number } | null;
   settingsData:    Record<string, unknown> | null;
+  recipe:          RecipeData | null;
+  notification:    NotificationData | null;
+  ironManActive:   boolean;
   sendInput:       (text: string) => void;
   requestSettings: () => void;
   saveSettings:    (cfg: Record<string, unknown>) => void;
+  stopAudio:       () => void;
+  toggleMic:       () => void;
 }
 
 export function useDesktopBridge(): DesktopBridgeState {
@@ -38,6 +56,9 @@ export function useDesktopBridge(): DesktopBridgeState {
   const [globeCmd,     setGlobeCmd]     = useState<GlobeAction | null>(null);
   const [stats,        setStats]        = useState<{ cpu: number; ram: number } | null>(null);
   const [settingsData, setSettingsData] = useState<Record<string, unknown> | null>(null);
+  const [recipe,       setRecipe]       = useState<RecipeData | null>(null);
+  const [notification, setNotification] = useState<NotificationData | null>(null);
+  const [ironManActive,setIronManActive]= useState(false);
 
   const wsRef          = useRef<WebSocket | null>(null);
   const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -138,6 +159,29 @@ export function useDesktopBridge(): DesktopBridgeState {
         setSettingsData(msg.settings as Record<string, unknown>);
         break;
 
+      case "recipe":
+        setRecipe({
+          titre:        msg.titre        as string,
+          ingredients:  msg.ingredients  as string[],
+          instructions: msg.instructions as string[],
+          portions:     msg.portions     as number | undefined,
+          temps:        msg.temps        as string | undefined,
+        });
+        break;
+
+      case "notification":
+        setNotification({ title: msg.title as string, body: msg.body as string });
+        // Notification navigateur native si autorisée
+        if (typeof window !== "undefined" && "Notification" in window
+            && Notification.permission === "granted") {
+          new Notification(msg.title as string, { body: msg.body as string });
+        }
+        break;
+
+      case "iron_man":
+        setIronManActive(msg.etat === "on");
+        break;
+
       case "pong":
         break;
 
@@ -175,6 +219,18 @@ export function useDesktopBridge(): DesktopBridgeState {
     }
   }, []);
 
+  const stopAudio = useCallback(() => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: "stop_audio" }));
+    }
+  }, []);
+
+  const toggleMic = useCallback(() => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: "toggle_mic" }));
+    }
+  }, []);
+
   return {
     isConnected,
     orbState,
@@ -185,8 +241,13 @@ export function useDesktopBridge(): DesktopBridgeState {
     globeCmd,
     stats,
     settingsData,
+    recipe,
+    notification,
+    ironManActive,
     sendInput,
     requestSettings,
     saveSettings,
+    stopAudio,
+    toggleMic,
   };
 }

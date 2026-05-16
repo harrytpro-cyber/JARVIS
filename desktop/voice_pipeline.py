@@ -170,6 +170,11 @@ def detect_intent(text: str) -> str:
                              "active la caméra", "analyse la caméra"]):
         return "camera"
 
+    # Mode Iron Man — détection de claps
+    if any(w in t for w in ["mode iron man", "iron man", "détection de clap",
+                             "active les claps", "mode clap"]):
+        return "iron_man"
+
     # Dictée — tape du texte à la position du curseur
     if any(w in t for w in ["tape ", "dicte ", "dictée "]):
         return "dictee"
@@ -340,7 +345,11 @@ class VoicePipeline:
             local_resolver.init(tts.speak)
 
         # Démarrer le pont WebSocket (desktop → frontend)
-        _ws.start(input_callback=self._handle_command)
+        _ws.start(
+            input_callback=self._handle_command,
+            stop_audio_callback=self._stop_audio,
+            toggle_mic_callback=self._toggle_mic,
+        )
 
         # Moniteur CPU/RAM → frontend via ws_bridge
         try:
@@ -348,6 +357,17 @@ class VoicePipeline:
             stats_monitor.start()
         except Exception as _e:
             print(f"[voice] stats_monitor non chargé ({_e})")
+
+        # Mode Iron Man (optionnel)
+        self._iron_man = None
+        try:
+            from iron_man import IronManMode
+            self._iron_man = IronManMode(tts_speak=tts.speak)
+        except Exception as _e:
+            print(f"[voice] iron_man non chargé ({_e})")
+
+        # Flag micro activé/désactivé
+        self._mic_enabled = True
 
     # ── Démarrage ─────────────────────────────────────────────────────────────
 
@@ -595,6 +615,11 @@ class VoicePipeline:
             ).start()
             return
 
+        # ── Mode Iron Man ─────────────────────────────────────────────────────
+        if intent == "iron_man":
+            self._handle_iron_man(text)
+            return
+
         # ── Dictée ────────────────────────────────────────────────────────────
         if intent == "dictee":
             self._handle_dictee(text)
@@ -787,6 +812,34 @@ class VoicePipeline:
         except Exception as e:
             print(f"[voice] Lecture emails : {e}")
             self._tts.speak("Impossible de lire vos emails. Vérifiez credentials.json, Harry.")
+
+    def _stop_audio(self):
+        """Arrête le TTS en cours (appelé par le frontend via stop_audio)."""
+        try:
+            self._tts.stop()
+        except Exception:
+            pass
+        _ws.send_state("idle")
+
+    def _toggle_mic(self):
+        """Active/désactive le micro depuis le frontend."""
+        self._mic_enabled = not self._mic_enabled
+        etat = "activé" if self._mic_enabled else "désactivé"
+        print(f"[voice] Micro {etat}")
+        _ws.send_notification("Microphone", f"Microphone {etat}")
+
+    def _handle_iron_man(self, text: str):
+        """Active ou désactive le mode Iron Man depuis une commande vocale."""
+        if self._iron_man is None:
+            self._tts.speak("Module Iron Man non disponible, Harry.")
+            return
+        t = text.lower()
+        if any(w in t for w in ["active", "démarre", "on", "allume"]):
+            self._iron_man.start()
+            _ws.send_iron_man("on")
+        else:
+            self._iron_man.stop()
+            _ws.send_iron_man("off")
 
     def _handle_dictee(self, text: str):
         """Tape le texte demandé à la position actuelle du curseur."""

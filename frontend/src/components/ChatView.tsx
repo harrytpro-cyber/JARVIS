@@ -15,6 +15,7 @@ import HelpHud                  from "./HelpHud";
 import SettingsModal            from "./SettingsModal";
 import WeatherPanel             from "./WeatherPanel";
 import HaPanel                 from "./HaPanel";
+import RecipeHud               from "./RecipeHud";
 import type { JarvisConfig }    from "./SettingsModal";
 import type { GlobeHandle, GlobeAction } from "./GlobeOverlay";
 
@@ -175,6 +176,30 @@ export function ChatView({ token, onLogout }: Props) {
         <WeatherPanel
           ville={(bridge.settingsData?.ville as string | undefined) ?? "Paris"}
         />
+      )}
+
+      {/* ── Recette HUD ─────────────────────────────────────────────────── */}
+      <RecipeHud
+        recipe={bridge.recipe ?? null}
+        onClose={() => { /* recipe se ferme seule */ }}
+      />
+
+      {/* ── Badge Iron Man ───────────────────────────────────────────────── */}
+      {bridge.ironManActive && (
+        <div style={{
+          position:      "fixed",
+          top:           16,
+          left:          "50%",
+          transform:     "translateX(-50%)",
+          zIndex:        90,
+          fontSize:      9,
+          letterSpacing: 3,
+          color:         "rgba(239,68,68,0.7)",
+          textTransform: "uppercase",
+          animation:     "blink 1.5s ease-in-out infinite",
+        }}>
+          ⚡ MODE IRON MAN ACTIF
+        </div>
       )}
 
       {/* ── Panneau Home Assistant ───────────────────────────────────────── */}

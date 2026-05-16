@@ -12,8 +12,15 @@ Messages Desktop → Frontend :
   {"type": "globe",       "globe_action": "fly_to", "lat": 48.85, ...}
   {"type": "stats",       "cpu": 45.2, "ram": 62.1}
 
+Messages Desktop → Frontend :
+  {"type": "recipe",       "titre": "...", "ingredients": [...], "instructions": [...]}
+  {"type": "notification", "title": "...", "body": "..."}
+  {"type": "iron_man",     "etat": "on|off"}
+
 Messages Frontend → Desktop :
-  {"type": "user_input", "text": "Quelle heure est-il ?"}
+  {"type": "user_input",  "text": "Quelle heure est-il ?"}
+  {"type": "stop_audio"}
+  {"type": "toggle_mic"}
   {"type": "get_settings"}
   {"type": "ping"}
 """
@@ -27,10 +34,12 @@ from typing import Any, Callable, Optional, Set
 log = logging.getLogger("ws_bridge")
 
 # ── État global ────────────────────────────────────────────────────────────────
-_clients:  Set[Any]                   = set()
-_loop:     Optional[asyncio.AbstractEventLoop] = None
-_thread:   Optional[threading.Thread] = None
-_on_input: Optional[Callable[[str], None]] = None   # callback quand le frontend envoie du texte
+_clients:       Set[Any]                   = set()
+_loop:          Optional[asyncio.AbstractEventLoop] = None
+_thread:        Optional[threading.Thread] = None
+_on_input:      Optional[Callable[[str], None]] = None   # callback texte depuis frontend
+_on_stop_audio: Optional[Callable[[], None]]    = None   # callback stop TTS
+_on_toggle_mic: Optional[Callable[[], None]]    = None   # callback bascule micro
 
 _DESKTOP_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -70,6 +79,14 @@ async def _handler(ws):
                     if new_cfg:
                         _save_config(new_cfg)
                         await _safe_send(ws, {"type": "settings_saved", "ok": True})
+
+                elif msg_type == "stop_audio":
+                    if _on_stop_audio:
+                        threading.Thread(target=_on_stop_audio, daemon=True).start()
+
+                elif msg_type == "toggle_mic":
+                    if _on_toggle_mic:
+                        threading.Thread(target=_on_toggle_mic, daemon=True).start()
 
                 elif msg_type == "ping":
                     await _safe_send(ws, {"type": "pong"})
@@ -129,10 +146,16 @@ def _run_loop():
 
 # ── API publique ───────────────────────────────────────────────────────────────
 
-def start(input_callback: Optional[Callable[[str], None]] = None):
+def start(
+    input_callback:      Optional[Callable[[str], None]] = None,
+    stop_audio_callback: Optional[Callable[[], None]]    = None,
+    toggle_mic_callback: Optional[Callable[[], None]]    = None,
+):
     """Démarre le serveur WebSocket dans un thread daemon."""
-    global _thread, _on_input
-    _on_input = input_callback
+    global _thread, _on_input, _on_stop_audio, _on_toggle_mic
+    _on_input      = input_callback
+    _on_stop_audio = stop_audio_callback
+    _on_toggle_mic = toggle_mic_callback
     _thread = threading.Thread(target=_run_loop, daemon=True, name="WsBridge-Server")
     _thread.start()
     log.info("[WsBridge] Thread serveur lancé")
@@ -178,6 +201,30 @@ def send_globe(data: dict[str, Any]):
 
 def send_stats(cpu: float, ram: float):
     broadcast({"type": "stats", "cpu": round(cpu, 1), "ram": round(ram, 1)})
+
+
+def send_recipe(titre: str, ingredients: list, instructions: list,
+                portions: int | None = None, temps: str | None = None):
+    """Affiche une recette dans le HUD frontend."""
+    payload: dict = {
+        "type":         "recipe",
+        "titre":        titre,
+        "ingredients":  ingredients,
+        "instructions": instructions,
+    }
+    if portions: payload["portions"] = portions
+    if temps:    payload["temps"]    = temps
+    broadcast(payload)
+
+
+def send_notification(title: str, body: str):
+    """Notification push vers le frontend."""
+    broadcast({"type": "notification", "title": title, "body": body})
+
+
+def send_iron_man(etat: str):
+    """Synchronise l'état du mode Iron Man avec le frontend."""
+    broadcast({"type": "iron_man", "etat": etat})
 
 
 # ── Utilitaire config ──────────────────────────────────────────────────────────
