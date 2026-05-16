@@ -58,6 +58,7 @@ export default function WeatherPanel({ ville = "Paris" }: Props) {
   const [data,    setData]    = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
   const [visible, setVisible] = useState(true);
+  const [error,   setError]   = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -110,7 +111,7 @@ export default function WeatherPanel({ ville = "Paris" }: Props) {
         hourly:   preds,
       });
     } catch {
-      // silencieux
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -129,11 +130,11 @@ export default function WeatherPanel({ ville = "Paris" }: Props) {
   return (
     <div style={{
       position:       "fixed",
-      top:            72,
+      top:            60,
       left:           18,
       zIndex:         90,
-      background:     "rgba(10,14,26,0.7)",
-      border:         "1px solid rgba(76,168,232,0.12)",
+      background:     "rgba(5,8,20,0.85)",
+      border:         "1px solid rgba(76,168,232,0.18)",
       borderRadius:   8,
       padding:        "10px 16px",
       backdropFilter: "blur(8px)",
@@ -204,9 +205,17 @@ export default function WeatherPanel({ ville = "Paris" }: Props) {
             </>
           )}
         </>
-      ) : (
-        <div style={{ fontSize: 10, color: "rgba(239,68,68,0.4)", letterSpacing: 1 }}>météo indisponible</div>
-      )}
+      ) : error ? (
+        <div style={{ fontSize: 9, color: "rgba(76,168,232,0.3)", letterSpacing: 1 }}>
+          météo indisponible
+          <button
+            onClick={load}
+            style={{ display: "block", marginTop: 4, background: "none", border: "none",
+              color: "rgba(76,168,232,0.25)", fontSize: 8, cursor: "pointer",
+              fontFamily: '"Courier New", monospace', letterSpacing: 2 }}
+          >↻ réessayer</button>
+        </div>
+      ) : null}
     </div>
   );
 }

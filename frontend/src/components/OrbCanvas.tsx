@@ -31,10 +31,10 @@ const ROT_SPEED: Record<OrbState, number> = {
   speaking:  0.014,
 };
 const MAX_DIST: Record<OrbState, number> = {
-  idle:      4.5,
-  listening: 5.5,
-  thinking:  7.0,
-  speaking:  6.0,
+  idle:      6.0,
+  listening: 7.0,
+  thinking:  8.5,
+  speaking:  7.5,
 };
 
 export default function OrbCanvas({ state, quality = "high", className = "" }: Props) {
@@ -75,7 +75,7 @@ export default function OrbCanvas({ state, quality = "high", className = "" }: P
       colors[i * 3]     = COL_BASE.r;
       colors[i * 3 + 1] = COL_BASE.g;
       colors[i * 3 + 2] = COL_BASE.b;
-      sizes[i] = Math.random() * 0.35 + 0.08;
+      sizes[i] = Math.random() * 0.55 + 0.18;
       normals.push(new THREE.Vector3(nx, ny, nz));
     }
 
@@ -92,7 +92,7 @@ export default function OrbCanvas({ state, quality = "high", className = "" }: P
         void main() {
           vColor = color;
           vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
-          gl_PointSize = size * (280.0 / -mvPos.z);
+          gl_PointSize = size * (420.0 / -mvPos.z);
           gl_Position  = projectionMatrix * mvPos;
         }
       `,
@@ -101,8 +101,8 @@ export default function OrbCanvas({ state, quality = "high", className = "" }: P
         void main() {
           float d = length(gl_PointCoord - vec2(0.5));
           if (d > 0.5) discard;
-          float alpha = 1.0 - smoothstep(0.28, 0.5, d);
-          gl_FragColor = vec4(vColor, alpha * 0.9);
+          float alpha = 1.0 - smoothstep(0.2, 0.5, d);
+          gl_FragColor = vec4(vColor, alpha);
         }
       `,
       transparent: true,
@@ -123,7 +123,7 @@ export default function OrbCanvas({ state, quality = "high", className = "" }: P
     const conMat = new THREE.LineBasicMaterial({
       vertexColors: true,
       transparent: true,
-      opacity: 0.15,
+      opacity: 0.35,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
