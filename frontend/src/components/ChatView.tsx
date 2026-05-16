@@ -23,10 +23,11 @@ const OrbCanvas    = dynamic(() => import("./OrbCanvas"),    { ssr: false });
 const GlobeOverlay = dynamic(() => import("./GlobeOverlay"), { ssr: false });
 
 interface Props {
-  token: string;
+  token:    string;
+  onLogout?: () => void;
 }
 
-export function ChatView({ token }: Props) {
+export function ChatView({ token, onLogout }: Props) {
   // ── Source 1 : Chat SSE (saisie clavier dans le frontend) ──────────────────
   const chat = useChat(token);
 
@@ -182,6 +183,31 @@ export function ChatView({ token }: Props) {
         haToken={bridge.settingsData?.ha_token as string | undefined}
         customEntities={bridge.settingsData?.ha_custom_entities as Parameters<typeof HaPanel>[0]["customEntities"]}
       />
+
+      {/* ── Bouton déconnexion ───────────────────────────────────────────── */}
+      {onLogout && (
+        <button
+          onClick={onLogout}
+          style={{
+            position:      "fixed",
+            bottom:        80,
+            left:          18,
+            zIndex:        90,
+            background:    "none",
+            border:        "none",
+            color:         "rgba(76,168,232,0.2)",
+            fontSize:      8,
+            letterSpacing: 2,
+            cursor:        "pointer",
+            fontFamily:    '"Courier New", Courier, monospace',
+            textTransform: "uppercase",
+          }}
+          onMouseEnter={e => (e.currentTarget.style.color = "rgba(239,68,68,0.5)")}
+          onMouseLeave={e => (e.currentTarget.style.color = "rgba(76,168,232,0.2)")}
+        >
+          ⏻ DÉCONNEXION
+        </button>
+      )}
 
       {/* ── Badge desktop bridge ─────────────────────────────────────────── */}
       {bridge.isConnected && (
